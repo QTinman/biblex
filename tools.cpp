@@ -37,7 +37,7 @@ int reverse(int sum){
     return(sum);
 }
 
-std::string tolowerCase(std::string &str)
+string tolowerCase(string &str)
 {
     const int length = str.length();
     for(int i=0; i < length; ++i)
@@ -108,20 +108,13 @@ bool existSettings(string file)
 
 void createSettings(string file)
 {
-        //std::string stext;
-        //eraseAllSubStr(line,"");
-        //eraseAllSubStr(line,"");
-        //eraseAllSubStr(line,"");
+
         std::ofstream fout;  // Create Object of Ofstream
-       // std::ifstream fin;
-       // fin.open(file);
+
        fout.open (file,ios::app); // Append mode
        fout << "greek=\n";
        fout << "hebrew=\n";
-       // if(fin.is_open()) {
-       // fin.close();
-       // return true;
-       // }
+
         fout.close(); // Closing the file
    // return false;
 }
@@ -152,6 +145,7 @@ QString readSettings(string file, string entry)
 
         //if(found) break;
     }
+    return "none";
 }
 
 void writeSettings(char file[], string entry,string settings)
@@ -175,7 +169,7 @@ void writeSettings(char file[], string entry,string settings)
         if(strTemp.substr(0,strReplace.length()) == strReplace){
 
             strTemp = strNew;
-            qDebug() << QString::fromStdString(strTemp);
+            //qDebug() << QString::fromStdString(strTemp);
             //found = true;
         }
         strTemp += "\n";
@@ -228,13 +222,6 @@ void eraseFromSubstr(std::string & mainStr, const std::string & toErase)
 
 }
 
-void deleteAttributes(std::string & attr)
-{
-
-    //eraseAllSubStr(attr,"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"//www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
-    //eraseAllSubStr(attr,"<html xmlns=\"//www.w3.org/1999/xhtml\">");
-
-}
 
 bool replacestring(std::string& str, const std::string& from, const std::string& to) {
     size_t start_pos = str.find(from);
@@ -313,6 +300,8 @@ QString readbib(int ns, QString nstype, QString hebrew_lexicon, QString greek_le
     readinfile(settingsFilehebrew,h_def1,h_def2,h_def3,g_def1,g_def2,g_def3);
     g_link = " <a href=\"https://biblehub.com/str/greek/"+QString::number(ns)+".htm\">Source</a> ";
     h_link = " <a href=\"https://biblehub.com/str/hebrew/"+QString::number(ns)+".htm\">Source</a> ";
+    //g_link = " <a href=\"file://"+QString::fromStdString(settingsFilegreek)+"\">Source</a> ";
+    //h_link = " <a href=\"file://"+QString::fromStdString(settingsFilehebrew)+"\">Source</a> ";
     //g_link = "<a href=\"#\" onClick=\"MyWindow=window.open('"+QString::fromStdString(settingsFilegreek)+"','MyWindow','width=600,height=300'); return false;\">Source</a>";
     //h_link = "<a href=\"#\" onClick=\"MyWindow=window.open('"+QString::fromStdString(settingsFilehebrew)+"','MyWindow','width=600,height=300'); return false;\">Source</a>";
     if (nstype == "EO") html = "<center><h2>"+formattext("English Ordinal",5,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
@@ -402,3 +391,4 @@ QString formattext(QString line, int color, int bold)
     // html == "#include &lt;QtCore&gt;"
     return formatedtag;
 }
+

@@ -3,8 +3,16 @@
 
 #include <QMainWindow>
 #include "tools.h"
+#include <QDialog>
+#include <QLabel>
+#include <QPrinter>
+#include <QPrintDialog>
+#include <QPainter>
+#include <QPrintPreviewDialog>
 
 extern QString greek_lexicon,hebrew_lexicon;
+extern QString hmem[10];
+extern int hmempos;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,8 +32,19 @@ private slots:
     void on_actionSelect_Greek_lexicon_triggered();
 
     void on_actionSelect_Hebrew_lexicon_triggered();
+    void keymem(QString memstr);
+
+    void on_action_Print_triggered();
+    void doPrint(QPrinter * printer);
+    void savelog(QString line, QString filename);
+
+    void on_action_Save_output_triggered();
 
 private:
     Ui::MainWindow *ui;
+
+protected:
+    //void changeEvent(QEvent *e);
+    bool eventFilter(QObject *obj, QEvent *event);
 };
 #endif // MAINWINDOW_H

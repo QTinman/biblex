@@ -71,7 +71,7 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>500</width>
+              <width>600</width>
               <height>0</height>
              </size>
             </property>
@@ -87,13 +87,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="SaveHistory">
-          <property name="text">
-           <string>&amp;Save</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -139,6 +132,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="action_Save_output"/>
+    <addaction name="action_Print"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -172,6 +167,16 @@
   <action name="actionSelect_Hebrew_lexicon">
    <property name="text">
     <string>Select &amp;Hebrew lexicon</string>
+   </property>
+  </action>
+  <action name="action_Print">
+   <property name="text">
+    <string>&amp;Print</string>
+   </property>
+  </action>
+  <action name="action_Save_output">
+   <property name="text">
+    <string>&amp;Save output</string>
    </property>
   </action>
  </widget>

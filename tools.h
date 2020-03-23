@@ -16,7 +16,6 @@
     void eraseToSubstr(std::string & mainStr, const std::string & toErase);
     void eraseFromSubstr(std::string & mainStr, const std::string & toErase);
     QString readbib(int ns, QString nstype, QString hebrew_lexicon, QString greek_lexicon);
-    void deleteAttributes(std::string & attr);
     std::string totable(std::string str, int start, int endrow, int colum, int width);
     QString Qtotable(QString str, int start, int endrow, int colum, int width);
     QString formattext(QString line, int color, int bold);
