@@ -90,11 +90,6 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
 
 bool existSettings(string file)
 {
-        //std::string stext;
-        //eraseAllSubStr(line,"");
-        //eraseAllSubStr(line,"");
-        //eraseAllSubStr(line,"");
-        //std::ofstream fout;  // Create Object of Ofstream
         std::ifstream fin;
         fin.open(file);
        //fout.open (file,ios::app); // Append mode
@@ -180,7 +175,7 @@ void writeSettings(char file[], string entry,string settings)
 
     filein.close();
     fileout.close();
-    const int result = remove(file);
+    remove(file);
     if (rename("settings.txt.tmp","settings.txt") ==0)
         cout<<"file renamed successfully.";
      else
@@ -298,12 +293,8 @@ QString readbib(int ns, QString nstype, QString hebrew_lexicon, QString greek_le
     settingsFilegreek += "/"+std::to_string(ns)+".htm";
     readinfile(settingsFilegreek,h_def1,h_def2,h_def3,g_def1,g_def2,g_def3);
     readinfile(settingsFilehebrew,h_def1,h_def2,h_def3,g_def1,g_def2,g_def3);
-    g_link = " <a href=\"https://biblehub.com/str/greek/"+QString::number(ns)+".htm\">Source</a> ";
-    h_link = " <a href=\"https://biblehub.com/str/hebrew/"+QString::number(ns)+".htm\">Source</a> ";
-    //g_link = " <a href=\"file://"+QString::fromStdString(settingsFilegreek)+"\">Source</a> ";
-    //h_link = " <a href=\"file://"+QString::fromStdString(settingsFilehebrew)+"\">Source</a> ";
-    //g_link = "<a href=\"#\" onClick=\"MyWindow=window.open('"+QString::fromStdString(settingsFilegreek)+"','MyWindow','width=600,height=300'); return false;\">Source</a>";
-    //h_link = "<a href=\"#\" onClick=\"MyWindow=window.open('"+QString::fromStdString(settingsFilehebrew)+"','MyWindow','width=600,height=300'); return false;\">Source</a>";
+    g_link = " <a href=\"https://biblehub.com/str/greek/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file://"+QString::fromStdString(settingsFilegreek)+"\">Local source</a>";
+    h_link = " <a href=\"https://biblehub.com/str/hebrew/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file://"+QString::fromStdString(settingsFilehebrew)+"\">Local source</a>";
     if (nstype == "EO") html = "<center><h2>"+formattext("English Ordinal",5,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
     if (nstype == "Jew") html = "<center><h2>"+formattext("Jewish",3,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
     if (nstype == "Sum") html = "<center><h2>"+formattext("Sumerian",4,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";

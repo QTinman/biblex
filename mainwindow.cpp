@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QDateTime>
+#include <QDialog>
+#include <QPushButton>
 //#include <iostream>
 #include <fstream>
 //#include <sstream>
@@ -23,6 +25,8 @@ using namespace std;
 QString greek_lexicon,hebrew_lexicon;
 QString hmem[10];
 int hmempos = -1;
+QString source;
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,16 +34,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     char csettings[13]="settings.txt";
+    QString pwd("");
+    char * PWD;
+    PWD = getenv ("PWD");
+    pwd.append(PWD);
+    qDebug() << "Working directory : " << pwd << flush;
+    source = pwd+"/tmp.htm";
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
-    setCentralWidget(ui->groupBox_3);
+    setCentralWidget(ui->frame_3);
     ui->lineEdit->focusWidget();
     ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
     ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
     ui->textBrowser->setOpenExternalLinks(true);
-    //ui->textBrowser->setOpenLinks(true);
-    //ui->textBrowser->setStyleSheet("text-color: #1f1414;");
-
     if (!existSettings("settings.txt")) {
         createSettings("settings.txt");
         greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
@@ -50,10 +57,15 @@ MainWindow::MainWindow(QWidget *parent)
         greek_lexicon = readSettings("settings.txt","greek");
         hebrew_lexicon = readSettings("settings.txt","hebrew");
     }
+    //ui->textBrowser->;
+    //ui->textBrowser->show();
+    ui->textBrowser->setSource(source);
+    //ui->textBrowser->home();
 }
 
 MainWindow::~MainWindow()
 {
+    remove(source.toUtf8().constData());
     delete ui;
 }
 
@@ -130,6 +142,7 @@ void MainWindow::on_lineEdit_returnPressed()
     //ui->textBrowser->append(html);
     html += readbib(ns3,"Sum",hebrew_lexicon,greek_lexicon);
     ui->textBrowser->append("<html>"+html+"</html>");
+    savelog(html,source);
 
     keymem(tphrase);
     ui->lineEdit->clear();
@@ -187,3 +200,10 @@ void MainWindow::savelog(QString line, QString filename)
     line = "";
 }
 
+
+
+
+void MainWindow::on_action_Clear_output_triggered()
+{
+    ui->textBrowser->clear();
+}

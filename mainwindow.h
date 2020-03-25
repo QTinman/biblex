@@ -13,6 +13,7 @@
 extern QString greek_lexicon,hebrew_lexicon;
 extern QString hmem[10];
 extern int hmempos;
+extern QString source;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -40,8 +41,14 @@ private slots:
 
     void on_action_Save_output_triggered();
 
+
+
+    void on_action_Clear_output_triggered();
+
 private:
     Ui::MainWindow *ui;
+    QPushButton *backButton;
+    QPushButton *clearButton;
 
 protected:
     //void changeEvent(QEvent *e);
