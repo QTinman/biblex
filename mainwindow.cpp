@@ -7,10 +7,27 @@
 #include <QDateTime>
 #include <QDialog>
 #include <QPushButton>
+#include <stdio.h>
+#include <string.h>
+
 //#include <iostream>
 #include <fstream>
 //#include <sstream>
 
+#ifdef WINNT
+    #include <direct.h>
+    #include <Windows.h>
+    #define GetCurrentDir GetCurrentDirectoryA(256, dir)
+    #define windud pwd=dir;
+    char dir[256];
+    std::string pwd("");
+#else
+    char * PWD;
+    //#include <unistd.h>
+    #define GetCurrentDir PWD = getenv ("PWD")
+    std::string pwd("");
+    #define windud pwd.append(PWD)
+ #endif
 
 /*
   QString::fromStdString(string)  <- from string to Qstring
@@ -25,21 +42,22 @@ using namespace std;
 QString greek_lexicon,hebrew_lexicon;
 QString hmem[10];
 int hmempos = -1;
-QString source;
+string source;
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-
     char csettings[13]="settings.txt";
-    QString pwd("");
-    char * PWD;
-    PWD = getenv ("PWD");
-    pwd.append(PWD);
-    qDebug() << "Working directory : " << pwd << flush;
-    source = pwd+"/tmp.htm";
+    GetCurrentDir;
+    windud;
+    while (replacestring(pwd,"\\","/"));
+    pwd += "/tmp.htm";
+    createSettings(pwd);
+    source = "file:///"+pwd;
+
+    //qDebug() << "Working directory : " << QString::fromStdString(source) << flush;
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
     setCentralWidget(ui->frame_3);
@@ -59,13 +77,23 @@ MainWindow::MainWindow(QWidget *parent)
     }
     //ui->textBrowser->;
     //ui->textBrowser->show();
-    ui->textBrowser->setSource(source);
+    QString srt = QString::fromStdString(source);
+    ui->textBrowser->setSource(srt);
     //ui->textBrowser->home();
 }
 
 MainWindow::~MainWindow()
 {
-    remove(source.toUtf8().constData());
+
+
+    char * writable = new char[pwd.size() + 1];
+    std::copy(pwd.begin(), pwd.end(), writable);
+    writable[pwd.size()] = '\0'; // don't forget the terminating 0
+    remove(writable);
+    // don't forget to free the string after finished using it
+    delete[] writable;
+
+
     delete ui;
 }
 
@@ -142,8 +170,8 @@ void MainWindow::on_lineEdit_returnPressed()
     //ui->textBrowser->append(html);
     html += readbib(ns3,"Sum",hebrew_lexicon,greek_lexicon);
     ui->textBrowser->append("<html>"+html+"</html>");
-    savelog(html,source);
-
+    savelog(html,QString::fromStdString(pwd));
+    //qDebug() << html+" qstring";
     keymem(tphrase);
     ui->lineEdit->clear();
 }

@@ -104,11 +104,19 @@ bool existSettings(string file)
 void createSettings(string file)
 {
 
-        std::ofstream fout;  // Create Object of Ofstream
-
+       std::ofstream fout;  // Create Object of Ofstream
        fout.open (file,ios::app); // Append mode
-       fout << "greek=\n";
-       fout << "hebrew=\n";
+       if(!fout)
+       {
+           qDebug() << "Error opening files!" << endl;
+           //return 1;
+       }
+       //qDebug() << QString::fromStdString(file);
+
+       if (file == "settings.txt") {
+        fout << "greek=\n";
+        fout << "hebrew=\n";
+       }
 
         fout.close(); // Closing the file
    // return false;
@@ -220,6 +228,7 @@ void eraseFromSubstr(std::string & mainStr, const std::string & toErase)
 
 bool replacestring(std::string& str, const std::string& from, const std::string& to) {
     size_t start_pos = str.find(from);
+    //qDebug() << QString::fromStdString(from);
     if(start_pos == std::string::npos)
         return false;
     str.replace(start_pos, from.length(), to);
@@ -291,10 +300,13 @@ QString readbib(int ns, QString nstype, QString hebrew_lexicon, QString greek_le
     string settingsFilegreek=greek_lexicon.toUtf8().constData();
     settingsFilehebrew += "/"+std::to_string(ns)+".htm";
     settingsFilegreek += "/"+std::to_string(ns)+".htm";
+
+    //qDebug() << QString::fromStdString(settingsFilegreek)+" string";
     readinfile(settingsFilegreek,h_def1,h_def2,h_def3,g_def1,g_def2,g_def3);
     readinfile(settingsFilehebrew,h_def1,h_def2,h_def3,g_def1,g_def2,g_def3);
-    g_link = " <a href=\"https://biblehub.com/str/greek/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file://"+QString::fromStdString(settingsFilegreek)+"\">Local source</a>";
-    h_link = " <a href=\"https://biblehub.com/str/hebrew/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file://"+QString::fromStdString(settingsFilehebrew)+"\">Local source</a>";
+    g_link = " <a href=\"https://biblehub.com/str/greek/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file:///"+QString::fromStdString(settingsFilegreek)+"\">Local source</a>";
+    h_link = " <a href=\"https://biblehub.com/str/hebrew/"+QString::number(ns)+".htm\">Biblehub</a> <a href=\"file:///"+QString::fromStdString(settingsFilehebrew)+"\">Local source</a>";
+
     if (nstype == "EO") html = "<center><h2>"+formattext("English Ordinal",5,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
     if (nstype == "Jew") html = "<center><h2>"+formattext("Jewish",3,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
     if (nstype == "Sum") html = "<center><h2>"+formattext("Sumerian",4,0)+" = "+formattext(QString::number(ns),1,0)+"</h2></center>";
@@ -306,6 +318,7 @@ QString readbib(int ns, QString nstype, QString hebrew_lexicon, QString greek_le
     html +=Qtotable("",0,1,0,0)+Qtotable(g_link,0,0,1,400)+Qtotable(h_link,0,0,1,500)+Qtotable("",0,2,0,0);
     html +=Qtotable("",2,0,0,0);
     //qDebug() << html;
+
     return html;
 
 }

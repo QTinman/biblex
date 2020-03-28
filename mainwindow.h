@@ -13,7 +13,15 @@
 extern QString greek_lexicon,hebrew_lexicon;
 extern QString hmem[10];
 extern int hmempos;
-extern QString source;
+extern std::string source;
+#ifdef WINNT
+    extern char dir[256];
+    extern std::string pwd;
+
+#else
+    extern char * PWD;
+    extern std::string pwd;
+ #endif
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
