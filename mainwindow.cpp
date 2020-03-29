@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QDateTime>
 #include <QDialog>
+#include <QtWidgets>
 #include <QPushButton>
 #include <stdio.h>
 #include <string.h>
@@ -14,20 +15,6 @@
 #include <fstream>
 //#include <sstream>
 
-#ifdef WINNT
-    #include <direct.h>
-    #include <Windows.h>
-    #define GetCurrentDir GetCurrentDirectoryA(256, dir)
-    #define windud pwd=dir;
-    char dir[256];
-    std::string pwd("");
-#else
-    char * PWD;
-    //#include <unistd.h>
-    #define GetCurrentDir PWD = getenv ("PWD")
-    std::string pwd("");
-    #define windud pwd.append(PWD)
- #endif
 
 /*
   QString::fromStdString(string)  <- from string to Qstring
@@ -42,7 +29,7 @@ using namespace std;
 QString greek_lexicon,hebrew_lexicon;
 QString hmem[10];
 int hmempos = -1;
-string source;
+QString source,pwd;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -50,21 +37,20 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     char csettings[13]="settings.txt";
-    GetCurrentDir;
-    windud;
-    while (replacestring(pwd,"\\","/"));
+    pwd = QDir::currentPath();
     pwd += "/tmp.htm";
-    createSettings(pwd);
+    //qDebug() << pwd;
+    createSettings(pwd.toUtf8().constData());
     source = "file:///"+pwd;
-
-    //qDebug() << "Working directory : " << QString::fromStdString(source) << flush;
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
+    ui->textBrowser->installEventFilter(this);
     setCentralWidget(ui->frame_3);
     ui->lineEdit->focusWidget();
     ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
     ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
     ui->textBrowser->setOpenExternalLinks(true);
+
     if (!existSettings("settings.txt")) {
         createSettings("settings.txt");
         greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
@@ -75,25 +61,17 @@ MainWindow::MainWindow(QWidget *parent)
         greek_lexicon = readSettings("settings.txt","greek");
         hebrew_lexicon = readSettings("settings.txt","hebrew");
     }
-    //ui->textBrowser->;
-    //ui->textBrowser->show();
-    QString srt = QString::fromStdString(source);
-    ui->textBrowser->setSource(srt);
-    //ui->textBrowser->home();
+
+    ui->textBrowser->setSource(source);
+
 }
 
 MainWindow::~MainWindow()
 {
 
-
-    char * writable = new char[pwd.size() + 1];
-    std::copy(pwd.begin(), pwd.end(), writable);
-    writable[pwd.size()] = '\0'; // don't forget the terminating 0
-    remove(writable);
-    // don't forget to free the string after finished using it
-    delete[] writable;
-
-
+    QString location = pwd;
+    QFile *rmFile = new QFile(location);
+    rmFile->remove();
     delete ui;
 }
 
@@ -136,6 +114,19 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
         }
         return false;
+    } else if (obj == ui->textBrowser)
+    {
+        //qDebug() << event->type();
+
+        if (event->type() == QEvent::InputMethodQuery)
+        {
+
+           // QString html = ui->textBrowser->toHtml();
+           // while (replacestring(pwd,"../greek/",""));
+           // while (replacestring(pwd,"/greek/",""));
+           // ui->textBrowser->setHtml(html);
+            //qDebug() << html;
+        }
     }
     return false;
 }
@@ -170,7 +161,7 @@ void MainWindow::on_lineEdit_returnPressed()
     //ui->textBrowser->append(html);
     html += readbib(ns3,"Sum",hebrew_lexicon,greek_lexicon);
     ui->textBrowser->append("<html>"+html+"</html>");
-    savelog(html,QString::fromStdString(pwd));
+    savelog(html,pwd);
     //qDebug() << html+" qstring";
     keymem(tphrase);
     ui->lineEdit->clear();
@@ -195,7 +186,7 @@ void MainWindow::doPrint(QPrinter * printer)
     QTime ct = QTime::currentTime();
     //ui->textBrowser->print(printer);
     printer->newPage();
-    printer->setDocName("Gematria Analyzer - "+ct.currentTime().toString());
+    printer->setDocName("Bible Lexicon - "+ct.currentTime().toString());
     ui->textBrowser->print(printer);
 }
 
@@ -208,10 +199,25 @@ void MainWindow::on_action_Print_triggered()
 
 void MainWindow::on_action_Save_output_triggered()
 {
-    QFileDialog saveAsdialog(this);
-    QString filename = saveAsdialog.getSaveFileName(this, tr("Save file"), ".", tr("Files (*.htm)"));
-    //if (saveAsdialog.exec() == QDialog::Accepted) {
-     savelog(ui->textBrowser->toHtml(),filename);
+    //QFileDialog saveAsdialog(this);
+    //QString filename = saveAsdialog.getSaveFileName(this, tr("Save file"), ".", tr("Files (*.htm)"));
+
+
+    const QString format = "htm";
+    QString initialPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (initialPath.isEmpty())
+        initialPath = QDir::currentPath();
+    initialPath += tr("/untitled.") + format;
+
+    QFileDialog fileDialog(this, tr("Save Output As"), initialPath);
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setFileMode(QFileDialog::AnyFile);
+    fileDialog.setDirectory(initialPath);
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    const QString fileName = fileDialog.selectedFiles().first();
+
+     savelog(ui->textBrowser->toHtml(),fileName);
     //}
 }
 
@@ -234,4 +240,56 @@ void MainWindow::savelog(QString line, QString filename)
 void MainWindow::on_action_Clear_output_triggered()
 {
     ui->textBrowser->clear();
+}
+
+void MainWindow::saveScreenshot()
+{
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (const QWindow *window = windowHandle())
+        screen = window->screen();
+    if (!screen)
+        return;
+
+
+    originalPixmap = screen->grabWindow(QWidget::hasFocus(),MainWindow::x(),MainWindow::y(),MainWindow::width(),MainWindow::height());
+
+    const QString format = "png";
+    QString initialPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+    if (initialPath.isEmpty())
+        initialPath = QDir::currentPath();
+    initialPath += tr("/untitled.") + format;
+
+    QFileDialog fileDialog(this, tr("Save As"), initialPath);
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setFileMode(QFileDialog::AnyFile);
+    fileDialog.setDirectory(initialPath);
+    QStringList mimeTypes;
+    const QList<QByteArray> baMimeTypes = QImageWriter::supportedMimeTypes();
+    for (const QByteArray &bf : baMimeTypes)
+        mimeTypes.append(QLatin1String(bf));
+    fileDialog.setMimeTypeFilters(mimeTypes);
+    fileDialog.selectMimeTypeFilter("image/" + format);
+    fileDialog.setDefaultSuffix(format);
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    const QString fileName = fileDialog.selectedFiles().first();
+    if (!originalPixmap.save(fileName)) {
+        QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
+                             .arg(QDir::toNativeSeparators(fileName)));
+    }
+}
+void MainWindow::on_actionScreenShot_triggered()
+{
+    saveScreenshot();
+}
+
+void MainWindow::on_actionSelect_Font_triggered()
+{
+    //const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok,QFont(ui->textBrowser->font()),this,"Select Font");
+    if (ok) {
+        ui->textBrowser->setFont(font);
+    }
 }

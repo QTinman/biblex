@@ -159,6 +159,8 @@ p, li { white-space: pre-wrap; }
     </widget>
     <addaction name="menu_Settings"/>
     <addaction name="action_Clear_output"/>
+    <addaction name="actionScreenShot"/>
+    <addaction name="actionSelect_Font"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -192,6 +194,19 @@ p, li { white-space: pre-wrap; }
   <action name="action_Clear_output">
    <property name="text">
     <string>&amp;Clear output</string>
+   </property>
+  </action>
+  <action name="actionScreenShot">
+   <property name="text">
+    <string>ScreenShot</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSelect_Font">
+   <property name="text">
+    <string>Select &amp;Font</string>
    </property>
   </action>
  </widget>

@@ -9,19 +9,13 @@
 #include <QPrintDialog>
 #include <QPainter>
 #include <QPrintPreviewDialog>
+#include <QPixmap>
+//#include <QProcess>
 
 extern QString greek_lexicon,hebrew_lexicon;
 extern QString hmem[10];
 extern int hmempos;
-extern std::string source;
-#ifdef WINNT
-    extern char dir[256];
-    extern std::string pwd;
-
-#else
-    extern char * PWD;
-    extern std::string pwd;
- #endif
+extern QString source,pwd;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -50,13 +44,19 @@ private slots:
     void on_action_Save_output_triggered();
 
 
-
+    void saveScreenshot();
     void on_action_Clear_output_triggered();
+
+    void on_actionScreenShot_triggered();
+
+    void on_actionSelect_Font_triggered();
 
 private:
     Ui::MainWindow *ui;
     QPushButton *backButton;
     QPushButton *clearButton;
+    QPixmap originalPixmap;
+
 
 protected:
     //void changeEvent(QEvent *e);
