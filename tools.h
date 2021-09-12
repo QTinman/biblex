@@ -8,8 +8,7 @@
     int reverse(int sum);
     std::string tolowerCase(std::string &str);
     int getwordnumericvalue(std::string word, int reduced, int reversed, int type);
-    bool existSettings(std::string file);
-    void createSettings(std::string file);
+    void createSettings(std::string file, std::string entry);
     QString readSettings(std::string file, std::string entry);
     void writeSettings(char file[], std::string entry,std::string settings);
     void eraseAllSubStr(std::string & mainStr, const std::string & toErase);

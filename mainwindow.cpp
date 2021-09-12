@@ -30,6 +30,7 @@ QString greek_lexicon,hebrew_lexicon;
 QString hmem[10];
 int hmempos = -1;
 QString source,pwd;
+bool nightmode=true;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -40,28 +41,41 @@ MainWindow::MainWindow(QWidget *parent)
     pwd = QDir::currentPath();
     pwd += "/tmp.htm";
     //qDebug() << pwd;
-    createSettings(pwd.toUtf8().constData());
+    createSettings(pwd.toUtf8().constData(),"");
     source = "file:///"+pwd;
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
     ui->textBrowser->installEventFilter(this);
     setCentralWidget(ui->frame_3);
     ui->lineEdit->focusWidget();
-    ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
-    ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
     ui->textBrowser->setOpenExternalLinks(true);
-
-    if (!existSettings("settings.txt")) {
-        createSettings("settings.txt");
-        greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
-        hebrew_lexicon = QFileDialog::getExistingDirectory(this,"Select Hebrew lexicon's directory",".");
-        writeSettings(csettings,"greek",greek_lexicon.toUtf8().constData());
-        writeSettings(csettings,"hebrew",hebrew_lexicon.toUtf8().constData());
-    } else {
-        greek_lexicon = readSettings("settings.txt","greek");
-        hebrew_lexicon = readSettings("settings.txt","hebrew");
+    QString font = readSettings("settings.txt","font");
+    greek_lexicon = readSettings("settings.txt","greek");
+    hebrew_lexicon = readSettings("settings.txt","hebrew");
+    QString nightm = readSettings("settings.txt","nightmode");
+    //qDebug() << font;
+    if (font != "none") {
+        QFont f1;
+        f1.fromString(font);
+        ui->textBrowser->setFont(f1);
     }
-
+    if (greek_lexicon == "none") {
+        greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
+        writeSettings(csettings,"greek",greek_lexicon.toUtf8().constData());
+    }
+    if (hebrew_lexicon == "none") {
+        hebrew_lexicon = QFileDialog::getExistingDirectory(this,"Select Hebrew lexicon's directory",".");
+        writeSettings(csettings,"hebrew",hebrew_lexicon.toUtf8().constData());
+    }
+    if (nightm == "true") {
+        nightmode = true;
+        ui->action_Nightmode->setChecked(true);
+    } else {
+        nightmode = false;
+        ui->action_Nightmode->setChecked(false);
+    }
+    if (nightmode) ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
+    if (nightmode) ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
     ui->textBrowser->setSource(source);
 
 }
@@ -70,8 +84,8 @@ MainWindow::~MainWindow()
 {
 
     QString location = pwd;
-    QFile *rmFile = new QFile(location);
-    rmFile->remove();
+    QFile *File = new QFile(location);
+    File->remove();
     delete ui;
 }
 
@@ -150,16 +164,23 @@ void MainWindow::on_lineEdit_returnPressed()
     QString backbutton = "<a href=\"javascript:history.back()\">Go Back</a>";
     QString html="";
     std::string line = ui->lineEdit->text().toUtf8().constData();
+    QString anumber=QString::fromStdString(line);
+    int nr=anumber.toInt();
+
     int ns1 = getwordnumericvalue(line,0,0,0);
     int ns2 = getwordnumericvalue(line,0,0,4);
     int ns3 = getwordnumericvalue(line,0,0,5);
     QString tphrase = ui->lineEdit->text();
     html = "<left><h2>Phrase: "+tphrase+"</h2></left>";
-    html += readbib(ns1,"EO",hebrew_lexicon,greek_lexicon);
-    //ui->textBrowser->append(html);
-    html += readbib(ns2,"Jew",hebrew_lexicon,greek_lexicon);
-    //ui->textBrowser->append(html);
-    html += readbib(ns3,"Sum",hebrew_lexicon,greek_lexicon);
+    if (nr==0) {
+        html += readbib(ns1,"EO",hebrew_lexicon,greek_lexicon);
+        html += readbib(ns2,"Jew",hebrew_lexicon,greek_lexicon);
+        html += readbib(ns3,"Sum",hebrew_lexicon,greek_lexicon);
+    } else {
+        html += readbib(nr,"EO",hebrew_lexicon,greek_lexicon);
+        html += readbib(nr,"Jew",hebrew_lexicon,greek_lexicon);
+        html += readbib(nr,"Sum",hebrew_lexicon,greek_lexicon);
+    }
     ui->textBrowser->append("<html>"+html+"</html>");
     savelog(html,pwd);
     //qDebug() << html+" qstring";
@@ -290,6 +311,24 @@ void MainWindow::on_actionSelect_Font_triggered()
     bool ok;
     QFont font = QFontDialog::getFont(&ok,QFont(ui->textBrowser->font()),this,"Select Font");
     if (ok) {
+        writeSettings("settings.txt","font",font.toString().toUtf8().constData());
         ui->textBrowser->setFont(font);
+    }
+}
+
+
+
+void MainWindow::on_action_Nightmode_toggled(bool arg1)
+{
+    if (arg1) nightmode = true;
+    else nightmode = false;
+    if (nightmode) {
+        writeSettings("settings.txt","nightmode","true");
+        ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
+        ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
+    } else  {
+        writeSettings("settings.txt","nightmode","false");
+        ui->textBrowser->setStyleSheet("");
+        ui->lineEdit->setStyleSheet("");
     }
 }

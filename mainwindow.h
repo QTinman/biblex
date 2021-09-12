@@ -16,6 +16,7 @@ extern QString greek_lexicon,hebrew_lexicon;
 extern QString hmem[10];
 extern int hmempos;
 extern QString source,pwd;
+extern bool nightmode;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -50,6 +51,8 @@ private slots:
     void on_actionScreenShot_triggered();
 
     void on_actionSelect_Font_triggered();
+
+    void on_action_Nightmode_toggled(bool arg1);
 
 private:
     Ui::MainWindow *ui;

@@ -161,6 +161,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_Clear_output"/>
     <addaction name="actionScreenShot"/>
     <addaction name="actionSelect_Font"/>
+    <addaction name="action_Nightmode"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -207,6 +208,14 @@ p, li { white-space: pre-wrap; }
   <action name="actionSelect_Font">
    <property name="text">
     <string>Select &amp;Font</string>
+   </property>
+  </action>
+  <action name="action_Nightmode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Nightmode</string>
    </property>
   </action>
  </widget>

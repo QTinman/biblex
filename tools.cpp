@@ -88,34 +88,20 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
         return(s1);
 }
 
-bool existSettings(string file)
-{
-        std::ifstream fin;
-        fin.open(file);
-       //fout.open (file,ios::app); // Append mode
-        if(fin.is_open()) {
-        fin.close();
-        return true;
-        }
-       // fout.close(); // Closing the file
-    return false;
-}
-
-void createSettings(string file)
+void createSettings(string file, string entry)
 {
 
        std::ofstream fout;  // Create Object of Ofstream
        fout.open (file,ios::app); // Append mode
        if(!fout)
        {
-           qDebug() << "Error opening files!" << endl;
+           qDebug() << "Error opening files!\n";
            //return 1;
        }
        //qDebug() << QString::fromStdString(file);
 
        if (file == "settings.txt") {
-        fout << "greek=\n";
-        fout << "hebrew=\n";
+        fout << entry+"=\n";
        }
 
         fout.close(); // Closing the file
@@ -129,25 +115,26 @@ QString readSettings(string file, string entry)
     ifstream filein(file); //File to read from
     if(!filein)
     {
+        createSettings(file,entry);
         cout << "Error opening files!" << endl;
         //return 1;
     }
     string strTemp;
-    //bool found = false;
-    while(filein >> strTemp)
+    bool found = false;
+    while(!filein.eof())
+    //while(filein >> strTemp)
     {
+        getline(filein,strTemp);
 
         if(strTemp.substr(0,strReplace.length()) == strReplace){
-
+            found = true;
             return QString::fromStdString(strTemp.substr(strReplace.length(),strTemp.length()-strReplace.length()));
-
-
-            //found = true;
         }
         strTemp += "\n";
 
-        //if(found) break;
+
     }
+    if(!found) createSettings(file,entry);
     return "none";
 }
 
@@ -166,9 +153,10 @@ void writeSettings(char file[], string entry,string settings)
 
     string strTemp;
     //bool found = false;
-    while(filein >> strTemp)
+    while(!filein.eof())
+    //while(filein >> strTemp)
     {
-
+        getline(filein,strTemp);
         if(strTemp.substr(0,strReplace.length()) == strReplace){
 
             strTemp = strNew;
