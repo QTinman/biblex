@@ -44,7 +44,7 @@
             <!-- %%INSERT_APP_ARGUMENTS -->
 
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
-            <meta-data android:name="android.app.extract_android_style" android:value="full"/>
+            <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
         </activity>
 
         <!-- File provider for sharing files (Android 7.0+) -->
