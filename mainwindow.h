@@ -5,10 +5,12 @@
 #include "tools.h"
 #include <QDialog>
 #include <QLabel>
+#ifndef ANDROID_BUILD
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPainter>
 #include <QPrintPreviewDialog>
+#endif
 #include <QPixmap>
 //#include <QProcess>
 
@@ -59,6 +61,11 @@ private:
     QPushButton *backButton;
     QPushButton *clearButton;
     QPixmap originalPixmap;
+
+#ifdef ANDROID_BUILD
+    void requestAndroidPermissions();
+    void shareFile(const QString &filePath, const QString &mimeType);
+#endif
 
 
 protected:

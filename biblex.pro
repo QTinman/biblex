@@ -1,15 +1,42 @@
 QT       += core gui
-QT       += printsupport
+
+# Conditional print support - not available on Android
+!android: QT += printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
+
+# Android specific configuration
+android {
+    QT += androidextras
+
+    # Android package information
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+    # Minimum Android API level
+    ANDROID_MIN_SDK_VERSION = 23
+    ANDROID_TARGET_SDK_VERSION = 33
+
+    # Android permissions
+    ANDROID_PERMISSIONS += \
+        android.permission.READ_EXTERNAL_STORAGE \
+        android.permission.WRITE_EXTERNAL_STORAGE \
+        android.permission.INTERNET
+
+    # Features
+    ANDROID_FEATURES += \
+        android.hardware.touchscreen
+}
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+
+# Define Android build
+android: DEFINES += ANDROID_BUILD
 
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -32,6 +59,13 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+android {
+    # Android deployment settings
+    target.path = /libs/armeabi-v7a
+    export(target.path)
+    INSTALLS += target
+}
 
 RESOURCES += \
     resources.qrc
