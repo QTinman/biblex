@@ -312,16 +312,16 @@ void MainWindow::on_actionSelect_Hebrew_lexicon_triggered()
 #endif
 }
 
+#ifndef ANDROID_BUILD
 void MainWindow::doPrint(QPrinter * printer)
 {
-#ifndef ANDROID_BUILD
     QTime ct = QTime::currentTime();
     //ui->textBrowser->print(printer);
     printer->newPage();
     printer->setDocName("Bible Lexicon - "+ct.currentTime().toString());
     ui->textBrowser->print(printer);
-#endif
 }
+#endif
 
 void MainWindow::on_action_Print_triggered()
 {
