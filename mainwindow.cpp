@@ -82,6 +82,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->textBrowser->installEventFilter(this);
     setCentralWidget(ui->frame_3);
     ui->lineEdit->focusWidget();
+
+    // Configure Android keyboard to show enter button
+    #ifdef Q_OS_ANDROID
+    ui->lineEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+    #endif
     ui->textBrowser->setOpenExternalLinks(true);
 
     // Explicitly connect returnPressed signal (in addition to auto-connection)
