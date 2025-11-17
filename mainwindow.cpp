@@ -19,8 +19,13 @@
 //#include <sstream>
 
 #ifdef ANDROID_BUILD
+#include <QJniObject>
+#include <QJniEnvironment>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtAndroid>
 #include <QAndroidJniObject>
+#endif
+#include <QCoreApplication>
 #endif
 
 
@@ -531,6 +536,44 @@ void MainWindow::requestAndroidPermissions()
     permissions << "android.permission.READ_EXTERNAL_STORAGE";
     permissions << "android.permission.WRITE_EXTERNAL_STORAGE";
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // Qt 6: Use QCoreApplication permission API
+    for (const QString &permission : permissions) {
+        // In Qt 6.2+, use the new permission API
+        // For now, we'll use JNI directly for compatibility
+        QJniObject activity = QJniObject::callStaticObjectMethod(
+            "org/qtproject/qt/android/QtNative",
+            "activity",
+            "()Landroid/app/Activity;");
+
+        if (activity.isValid()) {
+            QJniObject permissionString = QJniObject::fromString(permission);
+            jint result = activity.callMethod<jint>(
+                "checkSelfPermission",
+                "(Ljava/lang/String;)I",
+                permissionString.object<jstring>());
+
+            if (result != 0) { // PackageManager.PERMISSION_GRANTED = 0
+                // Request permission using activity
+                QJniObject javaPermissions = QJniObject::fromString(permission);
+                QJniEnvironment env;
+                jobjectArray permissionsArray = env->NewObjectArray(
+                    1,
+                    env->FindClass("java/lang/String"),
+                    javaPermissions.object<jstring>());
+
+                activity.callMethod<void>(
+                    "requestPermissions",
+                    "([Ljava/lang/String;I)V",
+                    permissionsArray,
+                    1);
+
+                env->DeleteLocalRef(permissionsArray);
+            }
+        }
+    }
+#else
+    // Qt 5: Use QtAndroid
     for (const QString &permission : permissions) {
         auto result = QtAndroid::checkPermission(permission);
         if (result == QtAndroid::PermissionResult::Denied) {
@@ -540,11 +583,77 @@ void MainWindow::requestAndroidPermissions()
             }
         }
     }
+#endif
 }
 
 void MainWindow::shareFile(const QString &filePath, const QString &mimeType)
 {
     // Share file using Android Intent
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // Qt 6: Use QJniObject
+    QJniObject javaPath = QJniObject::fromString(filePath);
+    QJniObject javaMimeType = QJniObject::fromString(mimeType);
+
+    QJniObject intent("android/content/Intent");
+    if (intent.isValid()) {
+        QJniObject action = QJniObject::getStaticObjectField(
+            "android/content/Intent", "ACTION_SEND", "Ljava/lang/String;");
+        intent.callObjectMethod("setAction", "(Ljava/lang/String;)Landroid/content/Intent;",
+                              action.object<jstring>());
+        intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
+                              javaMimeType.object<jstring>());
+
+        // Get Android context
+        QJniObject context = QJniObject::callStaticObjectMethod(
+            "org/qtproject/qt/android/QtNative",
+            "getContext",
+            "()Landroid/content/Context;");
+
+        // Use FileProvider for file sharing
+        QJniObject uri = QJniObject::callStaticObjectMethod(
+            "androidx/core/content/FileProvider",
+            "getUriForFile",
+            "(Landroid/content/Context;Ljava/lang/String;Ljava/io/File;)Landroid/net/Uri;",
+            context.object(),
+            QJniObject::fromString("com.biblex.app.fileprovider").object<jstring>(),
+            QJniObject("java/io/File", "(Ljava/lang/String;)V",
+                            javaPath.object<jstring>()).object());
+
+        if (uri.isValid()) {
+            intent.callObjectMethod("putExtra",
+                                  "(Ljava/lang/String;Landroid/os/Parcelable;)Landroid/content/Intent;",
+                                  QJniObject::getStaticObjectField(
+                                      "android/content/Intent", "EXTRA_STREAM",
+                                      "Ljava/lang/String;").object<jstring>(),
+                                  uri.object<jobject>());
+
+            intent.callObjectMethod("addFlags", "(I)Landroid/content/Intent;",
+                                  QJniObject::getStaticField<jint>(
+                                      "android/content/Intent",
+                                      "FLAG_GRANT_READ_URI_PERMISSION"));
+
+            QJniObject chooser = QJniObject::callStaticObjectMethod(
+                "android/content/Intent",
+                "createChooser",
+                "(Landroid/content/Intent;Ljava/lang/CharSequence;)Landroid/content/Intent;",
+                intent.object<jobject>(),
+                QJniObject::fromString("Share File").object<jstring>());
+
+            // Start activity
+            QJniObject activity = QJniObject::callStaticObjectMethod(
+                "org/qtproject/qt/android/QtNative",
+                "activity",
+                "()Landroid/app/Activity;");
+
+            if (activity.isValid()) {
+                activity.callMethod<void>("startActivity",
+                                         "(Landroid/content/Intent;)V",
+                                         chooser.object<jobject>());
+            }
+        }
+    }
+#else
+    // Qt 5: Use QAndroidJniObject
     QAndroidJniObject javaPath = QAndroidJniObject::fromString(filePath);
     QAndroidJniObject javaMimeType = QAndroidJniObject::fromString(mimeType);
 
@@ -590,5 +699,6 @@ void MainWindow::shareFile(const QString &filePath, const QString &mimeType)
             QtAndroid::startActivity(chooser, 0);
         }
     }
+#endif
 }
 #endif

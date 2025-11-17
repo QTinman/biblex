@@ -9,7 +9,9 @@ CONFIG += c++11
 
 # Android specific configuration
 android {
-    QT += androidextras
+    # Qt 6: androidextras is integrated into core, no need to add it
+    # Qt 5: add androidextras if needed
+    lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
 
     # Android package information
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

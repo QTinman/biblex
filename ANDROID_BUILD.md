@@ -4,9 +4,13 @@ This document describes how to build and deploy the Bible Lexicon application fo
 
 ## Prerequisites
 
-1. **Qt for Android** (Qt 5.12 or later recommended)
+1. **Qt for Android**
+   - **Qt 6.x** (Qt 6.2 or later recommended) - Fully supported
+   - **Qt 5.x** (Qt 5.12 or later) - Also supported
    - Download from: https://www.qt.io/download
    - Install Qt for Android component
+
+   **Note**: The code is compatible with both Qt 5 and Qt 6. Qt 6 users don't need the deprecated `androidextras` module.
 
 2. **Android SDK**
    - API Level 23 (Android 6.0) minimum
@@ -109,9 +113,30 @@ The Android build includes:
 - Responsive layouts for various screen sizes
 - Kinetic scrolling support
 
+## Qt 5 vs Qt 6 Compatibility
+
+The project automatically detects your Qt version and uses the appropriate APIs:
+
+### Qt 6 Changes
+- **QtAndroidExtras**: Removed in Qt 6, functionality integrated into QtCore
+- **QAndroidJniObject**: Replaced with `QJniObject`
+- **QtAndroid namespace**: Replaced with direct JNI calls using `QJniObject`
+- No need to add `androidextras` to the .pro file
+
+### Qt 5 Support
+- Uses `QtAndroid` and `QAndroidJniObject`
+- Requires `androidextras` module (automatically added by .pro file)
+
+The code uses preprocessor directives (`#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)`) to provide compatibility with both versions.
+
 ## Troubleshooting
 
 ### Build Errors
+
+**"Unknown module(s) in QT: androidextras" (Qt 6)**
+- This is normal and expected. The .pro file only adds androidextras for Qt 5
+- If you're still seeing this error, make sure you have the latest code
+- Qt 6 doesn't need this module
 
 **"Android SDK not found"**
 - Ensure Android SDK is properly installed
