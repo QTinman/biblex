@@ -71,52 +71,63 @@ MainWindow::MainWindow(QWidget *parent)
     char csettings[256];
     strcpy(csettings, settingsPath.toUtf8().constData());
 
-    //qDebug() << pwd;
+    qDebug() << "App data path:" << pwd;
     createSettings(pwd.toUtf8().constData(),"");
     source = "file:///"+pwd;
+
     ui->setupUi(this);
+    qDebug() << "UI setup complete";
+
     ui->lineEdit->installEventFilter(this);
     ui->textBrowser->installEventFilter(this);
     setCentralWidget(ui->frame_3);
     ui->lineEdit->focusWidget();
     ui->textBrowser->setOpenExternalLinks(true);
+
+    // Don't set source initially on Android - it might not exist yet
+#ifndef ANDROID_BUILD
+    ui->textBrowser->setSource(source);
+#else
+    // Set a simple HTML placeholder instead
+    ui->textBrowser->setHtml("<html><body><h1>Bible Lexicon</h1><p>Enter a word or phrase to search.</p></body></html>");
+    qDebug() << "Initial HTML set";
+#endif
     QString font = readSettings(csettings,"font");
     greek_lexicon = readSettings(csettings,"greek");
     hebrew_lexicon = readSettings(csettings,"hebrew");
     QString nightm = readSettings(csettings,"nightmode");
-    //qDebug() << font;
+
+    qDebug() << "Read settings - font:" << font << "greek:" << greek_lexicon << "hebrew:" << hebrew_lexicon;
+
     if (font != "none") {
         QFont f1;
         f1.fromString(font);
         ui->textBrowser->setFont(f1);
     }
+
+    // Set up default lexicon paths on Android without showing dialogs initially
     if (greek_lexicon == "none") {
-#ifdef ANDROID_BUILD
-        // On Android, provide guidance for setting up lexicons
-        QMessageBox::information(this, "Greek Lexicon Setup",
-                               "Please place Greek lexicon files in:\n" +
-                               QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/BibleLexicon/greek/\n\n" +
-                               "Or use Menu > Select Greek Lexicon to choose a different location.");
         greek_lexicon = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/BibleLexicon/greek";
         QDir().mkpath(greek_lexicon);
-#else
-        greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
-#endif
         writeSettings(csettings,"greek",greek_lexicon.toUtf8().constData());
+        qDebug() << "Created Greek lexicon path:" << greek_lexicon;
+#ifndef ANDROID_BUILD
+        // Only show dialog on desktop
+        greek_lexicon = QFileDialog::getExistingDirectory(this,"Select Greek lexicon's directory",".");
+        writeSettings(csettings,"greek",greek_lexicon.toUtf8().constData());
+#endif
     }
+
     if (hebrew_lexicon == "none") {
-#ifdef ANDROID_BUILD
-        // On Android, provide guidance for setting up lexicons
-        QMessageBox::information(this, "Hebrew Lexicon Setup",
-                               "Please place Hebrew lexicon files in:\n" +
-                               QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/BibleLexicon/hebrew/\n\n" +
-                               "Or use Menu > Select Hebrew Lexicon to choose a different location.");
         hebrew_lexicon = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/BibleLexicon/hebrew";
         QDir().mkpath(hebrew_lexicon);
-#else
-        hebrew_lexicon = QFileDialog::getExistingDirectory(this,"Select Hebrew lexicon's directory",".");
-#endif
         writeSettings(csettings,"hebrew",hebrew_lexicon.toUtf8().constData());
+        qDebug() << "Created Hebrew lexicon path:" << hebrew_lexicon;
+#ifndef ANDROID_BUILD
+        // Only show dialog on desktop
+        hebrew_lexicon = QFileDialog::getExistingDirectory(this,"Select Hebrew lexicon's directory",".");
+        writeSettings(csettings,"hebrew",hebrew_lexicon.toUtf8().constData());
+#endif
     }
     if (nightm == "true") {
         nightmode = true;
@@ -125,12 +136,22 @@ MainWindow::MainWindow(QWidget *parent)
         nightmode = false;
         ui->action_Nightmode->setChecked(false);
     }
-    if (nightmode) ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
-    if (nightmode) ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
+
+    qDebug() << "Night mode:" << nightmode;
+
+    if (nightmode) {
+        ui->textBrowser->setStyleSheet("background-color: #1f1414; color: white");
+        ui->lineEdit->setStyleSheet("background-color: #1f1414; color: white");
+    }
+
+#ifndef ANDROID_BUILD
     ui->textBrowser->setSource(source);
+#endif
 
 #ifdef ANDROID_BUILD
     // Mobile-friendly UI adjustments
+    qDebug() << "Applying mobile UI adjustments";
+
     // Make input field larger for touch
     ui->lineEdit->setMinimumHeight(50);
 
@@ -148,6 +169,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Make the window fullscreen on Android
     this->showMaximized();
+
+    qDebug() << "MainWindow constructor finished - window should be visible";
 #endif
 
 }
