@@ -84,6 +84,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lineEdit->focusWidget();
     ui->textBrowser->setOpenExternalLinks(true);
 
+    // Explicitly connect returnPressed signal (in addition to auto-connection)
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &MainWindow::on_lineEdit_returnPressed);
+    qDebug() << "Return pressed signal connected";
+
+#ifdef ANDROID_BUILD
+    // Configure keyboard to show action button (Done/Go) on Android
+    // ImhNoPredictiveText helps ensure the action button is visible
+    ui->lineEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+
+    // Make sure the return key is enabled and triggers returnPressed
+    ui->lineEdit->setAttribute(Qt::WA_InputMethodEnabled);
+
+    qDebug() << "Android keyboard configured for action button";
+#endif
+
     // Don't set source initially on Android - it might not exist yet
 #ifndef ANDROID_BUILD
     ui->textBrowser->setSource(source);
@@ -256,6 +271,8 @@ void MainWindow::keymem(QString memstr)
 
 void MainWindow::on_lineEdit_returnPressed()
 {
+    qDebug() << "Return pressed - processing input:" << ui->lineEdit->text();
+
     QString backbutton = "<a href=\"javascript:history.back()\">Go Back</a>";
     QString html="";
     std::string line = ui->lineEdit->text().toUtf8().constData();
