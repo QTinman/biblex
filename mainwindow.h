@@ -41,7 +41,9 @@ private slots:
     void keymem(QString memstr);
 
     void on_action_Print_triggered();
+#ifndef ANDROID_BUILD
     void doPrint(QPrinter * printer);
+#endif
     void savelog(QString line, QString filename);
 
     void on_action_Save_output_triggered();
