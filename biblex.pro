@@ -17,7 +17,9 @@ android {
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
     # Minimum Android API level
-    ANDROID_MIN_SDK_VERSION = 23
+    # Qt 6.7+ requires API 28 minimum
+    # Qt 6.2-6.6 requires API 23 minimum
+    ANDROID_MIN_SDK_VERSION = 28
     ANDROID_TARGET_SDK_VERSION = 33
 
     # Android permissions

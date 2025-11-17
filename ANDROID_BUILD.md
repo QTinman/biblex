@@ -13,9 +13,11 @@ This document describes how to build and deploy the Bible Lexicon application fo
    **Note**: The code is compatible with both Qt 5 and Qt 6. Qt 6 users don't need the deprecated `androidextras` module.
 
 2. **Android SDK**
-   - API Level 23 (Android 6.0) minimum
+   - **API Level 28 (Android 9.0) minimum** - Required for Qt 6.7+
    - API Level 33 (Android 13) target
    - Install via Android Studio or Qt Creator
+
+   **Note**: Qt 6.7+ requires Android 9.0 (API 28) minimum. If using Qt 6.2-6.6, you can lower minSdkVersion to 23.
 
 3. **Android NDK**
    - NDK r21 or later
@@ -209,10 +211,12 @@ androiddeployqt --input android-biblex-deployment-settings.json --output android
 
 ## Minimum Requirements
 
-- **Android Version**: 6.0 (Marshmallow, API 23) or higher
+- **Android Version**: 9.0 (Pie, API 28) or higher (required by Qt 6.7+)
 - **Storage**: 100MB+ (depends on lexicon file sizes)
 - **RAM**: 1GB minimum, 2GB recommended
 - **Screen**: 360x600dp minimum resolution
+
+**Note**: If using Qt 6.2-6.6, minimum Android version can be lowered to 6.0 (API 23).
 
 ## Recommended Device Specifications
 
